@@ -306,18 +306,15 @@ const NOT_OK = JSON.stringify({
 
 const ONE_DAY = 1.15741e8
 
-// TODO: Remove update locking
-
-// Update all feeds currently in the cache, ordered by rank. This uses a stream as a
-// serial queue to update the feeds in order. Use this function by binding it to
-// a `MangerService` object--it is the only stateful route of this service.
+// Updates the cache, where `this` is a `MangerService` object.
 function update (req, res, opts, cb) {
   const now = Date.now()
   const then = this.updating
-  const locked = typeof then === 'number' ? now - then < ONE_DAY : false
+  const limit = ONE_DAY // TODO: Make allowed update frequency configurable
+  const locked = typeof then === 'number' ? now - then < limit : false
 
   if (locked) {
-    const er = new Error('update error: already updating')
+    const er = new Error('update error: recently updated')
     return cb(er, 423, NOT_OK)
   }
 
@@ -325,7 +322,10 @@ function update (req, res, opts, cb) {
   // limit the duration, currently one day, of the lock.
   this.updating = now
 
-  opts.manger.flushCounter((er, feedCount) => {
+  const cache = opts.manger
+  const log = opts.log
+
+  cache.flushCounter((er, feedCount) => {
     if (er) {
       const failure = 'not updated'
       const reason = er.message
@@ -340,24 +340,25 @@ function update (req, res, opts, cb) {
     if (cb) cb(null, 202, OK)
 
     if (feedCount === 0) {
-      opts.log.warn('empty cache')
+      log.warn('empty cache')
       return (this.updating = null)
     }
 
-    const x = 1
-    const s = opts.manger.update(x)
+    const feedsPerStream = 10 // TODO: Use 100 feeds per stream or so
+    const x = Math.min(Math.round(feedCount / feedsPerStream), 10)
+    const s = cache.update(1) // TODO: Use x to update concurrently
     const t = time()
 
     let count = 0
 
     function ondata (feed) {
-      opts.log.debug('updated', feed.feed)
+      log.debug('updated', feed.feed)
       count++
     }
     const errors = []
     function onerror (er) {
       if (ok(er)) {
-        opts.log.warn({ err: er, url: er.url }, 'update')
+        log.warn({ err: er, url: er.url }, 'update')
         errors.push(er)
       } else {
         const failure = 'update error'
@@ -380,14 +381,12 @@ function update (req, res, opts, cb) {
           latency: secs
         }
         opts.log.info(info, 'updated')
-      //
-      // If we have received 'ENOTFOUND' for all feeds we've been trying to update,
-      // tolerating maximally five of five, we can assume that we have no outbound
-      // Internet connectivity--although we've just been counting errors, without
-      // relating them to the feeds. To get the attention of an operator we
-      // deliberately opt to crash.
-      //
       } else if (feedCount > 5 && errors.filter((er) => {
+        // If we have received 'ENOTFOUND' for all feeds we've been trying to
+        // update, tolerating maximally five of five, we can assume that we
+        // have no outbound Internet connectivity--although we've just been
+        // counting errors, without relating them to the feeds. To get the
+        // attention of an operator we deliberately opt to crash.
         return er.code === 'ENOTFOUND'
       }).length >= feedCount) {
         const er = new Error('no connection')
@@ -482,8 +481,10 @@ function resetRanks (req, res, opts, cb) {
 function flushCounter (req, res, opts, cb) {
   cb(null, 202, OK)
   const cache = opts.manger
-  cache.flushCounter(function flushCounterHandler (er, count) {
-    if (er) opts.log.warn(er)
+  const log = opts.log
+  cache.flushCounter((er, count) => {
+    if (er) log.warn(er)
+    log.debug({ count: count }, 'flushed')
   })
 }
 
