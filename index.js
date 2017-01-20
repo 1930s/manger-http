@@ -97,7 +97,7 @@ const whitelist = RegExp([
   'ECONNRESET',
   'ENOTFOUND',
   'ETIMEDOUT',
-  'already updating',
+  'recently updated',
   'client error',
   'not deleted',
   'parse error',
@@ -345,8 +345,8 @@ function update (req, res, opts, cb) {
     }
 
     const feedsPerStream = 10 // TODO: Use 100 feeds per stream or so
-    const x = Math.min(Math.round(feedCount / feedsPerStream), 10)
-    const s = cache.update(1) // TODO: Use x to update concurrently
+    const x = Math.min(Math.ceil(feedCount / feedsPerStream), 10)
+    const s = cache.update(x)
     const t = time()
 
     let count = 0
@@ -614,8 +614,17 @@ MangerService.prototype.start = function (cb) {
   }
   log.info(info, 'start')
 
+  // TODO: Refine item validation
+
   const cache = manger(this.location, {
-    cacheSize: this.cacheSize
+    cacheSize: this.cacheSize,
+    isEntry: (entry) => {
+      if (entry.enclosure) return true
+      log.warn(entry, 'invalid entry')
+    },
+    isFeed: (feed) => {
+      return true
+    }
   })
   this.errorHandler = errorHandler.bind(this)
   cache.on('error', this.errorHandler)
