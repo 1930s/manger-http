@@ -1,12 +1,15 @@
 {
   "request": {
-    "host": "localhost",
-    "port": 1337,
+    "host": "localhost:1337",
+    "protocol": "http",
     "method": "GET",
     "path": "/"
   },
   "response": {
-    "name": "manger",
-    "version": "3.0.3"
+    "statusCode": 200,
+    "payload": {
+      "name": "manger",
+      "version": "3.0.3"
+    }
   }
 }

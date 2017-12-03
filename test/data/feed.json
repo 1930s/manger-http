@@ -16,7 +16,8 @@
 },
 {
   "remote": {
-    "host": "http://www.newyorker.com",
+    "host": "localhost",
+    "port": 1338,
     "path": "/feed/posts",
     "headers": {
       "content-type": "application/json",

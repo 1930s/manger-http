@@ -1,9 +1,9 @@
 {
   "request": {
-    "host": "localhost",
-    "port": 1337,
+    "host": "localhost:1337",
+    "protocol": "http",
     "method": "GET",
-    "path": "/hello"
+    "pathname": "/hello"
   },
   "response": {
     "statusCode": 404,

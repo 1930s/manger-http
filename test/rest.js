@@ -1,8 +1,21 @@
 const common = require('./lib/common')
-const fs = require('fs')
+const fixtures = require('./lib/fixtures')
 const http = require('http')
-const path = require('path')
 const test = require('tap').test
+
+test('root', (t) => {
+  fixtures.run('root.json', t, (er) => {
+    if (er) throw er
+    t.end()
+  })
+})
+
+test('not found', (t) => {
+  fixtures.run('notfound.json', t, (er) => {
+    if (er) throw er
+    t.end()
+  })
+})
 
 test('abort', (t) => {
   const server = common.freshMangerServer()
@@ -21,24 +34,3 @@ test('abort', (t) => {
     })
   })
 })
-
-function readFixtures (file) {
-  const p = path.resolve(__dirname, 'data', file)
-  const input = fs.readFileSync(p)
-  const json = JSON.parse(input)
-  return json instanceof Array ? json : [json]
-}
-
-test('root', (t) => {
-  const fixtures = readFixtures('root.json')
-  console.log(fixtures)
-  t.end()
-})
-
-test('feed', (t) => {
-  const fixtures = readFixtures('feed.json')
-  console.log(fixtures)
-  t.end()
-})
-
-// TODO: etc.
