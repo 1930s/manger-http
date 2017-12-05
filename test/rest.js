@@ -17,6 +17,13 @@ test('not found', (t) => {
   })
 })
 
+test('feed', (t) => {
+  fixtures.run('feed.json', t, (er) => {
+    if (er) throw er
+    t.end()
+  })
+})
+
 test('abort', (t) => {
   const server = common.freshMangerServer()
   server.start((er) => {
