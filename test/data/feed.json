@@ -3,19 +3,21 @@
     "title": "DELETE",
     "request": {
       "method": "DELETE",
-      "path": "/feed/http%3A%2F%2Flocalhost:1338%2Fnewyorker"
+      "path": "/feed/http%3A%2F%2Flocalhost:8001%2Fnewyorker"
     },
     "response": {
       "statusCode": 404,
       "payload": {
         "error": "not deleted",
-        "reason": "http://localhost:1338/newyorker not cached"
+        "reason": "http://localhost:8001/newyorker not cached"
       }
     }
   },
   {
+    "title": "GET",
     "remote": {
-      "url": "/feed/posts",
+      "statusCode": 200,
+      "url": "/newyorker",
       "headers": {
         "content-type": "application/json",
         "ETAG": "55346232-18151"
@@ -23,24 +25,26 @@
       "file": "newyorker.xml"
     },
     "request": {
-      "path": "/feed/http%3A%2F%2Fwww.newyorker.com%2Ffeed%2Fposts"
+      "path": "/feed/http%3A%2F%2Flocalhost:8001%2Fnewyorker"
     },
     "response": {
+      "file": "newyorker.xml",
       "statusCode": 200,
       "payload": [
         { "title": "The New Yorker: Blogs" }
       ]
     }
-  },{
+  },
+  {
     "request": {
       "method": "DELETE",
-      "path": "/feed/http%3A%2F%2Fwww.newyorker.com%2Ffeed%2Fposts"
+      "path": "/feed/http%3A%2F%2Flocalhost:8001%2Fnewyorker"
     },
     "response": {
       "statusCode": 200,
       "payload": {
         "ok": true,
-        "id": "http://www.newyorker.com/feed/posts"
+        "id": "http://localhost:8001/newyorker"
       }
     }
   }
