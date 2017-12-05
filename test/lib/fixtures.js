@@ -2,7 +2,6 @@ const common = require('./common')
 const fs = require('fs')
 const http = require('http')
 const path = require('path')
-const url = require('url')
 
 exports.run = run
 
@@ -33,7 +32,7 @@ function freshRemoteServer (fixture, t) {
     return acc
   }, [])
 
-  if (remotes.length == 0) return
+  if (remotes.length === 0) return
 
   const fixtures = remotes.map((f) => {
     return (req, res) => {
