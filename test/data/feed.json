@@ -1,6 +1,6 @@
 [
   {
-    "title": "DELETE",
+    "title": "Failed DELETE",
     "request": {
       "method": "DELETE",
       "path": "/feed/http%3A%2F%2Flocalhost:8001%2Fnewyorker"
@@ -36,6 +36,7 @@
     }
   },
   {
+    "title": "Successful DELETE",
     "request": {
       "method": "DELETE",
       "path": "/feed/http%3A%2F%2Flocalhost:8001%2Fnewyorker"

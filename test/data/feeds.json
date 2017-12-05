@@ -1,8 +1,7 @@
 [
 {
+  "title": "GET Empty",
   "request": {
-    "host": "localhost",
-    "port": 1337,
     "method": "GET",
     "path": "/feeds"
   },
@@ -10,10 +9,11 @@
   ]
 },
 {
+  "title": "POST",
   "remote": [
   {
-    "host": "http://www.newyorker.com",
-    "path": "/feed/posts",
+    "statusCode": 200,
+    "url": "/newyorker",
     "headers": {
       "content-type": "application/json",
       "ETAG": "55346232-18151"
@@ -21,8 +21,8 @@
     "file": "newyorker.xml"
   },
   {
-    "host": "http://feeds.feedburner.com",
-    "path": "/thememorypalace",
+    "statusCode": 200,
+    "url": "/thememorypalace",
     "headers": {
       "content-type": "application/json",
       "ETAG": "55346232-18151"
@@ -30,8 +30,6 @@
     "file": "thememorypalace.xml"
   }],
   "request": {
-    "host": "localhost",
-    "port": 1337,
     "method": "POST",
     "path": "/feeds",
     "payload": [

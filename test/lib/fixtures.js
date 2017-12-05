@@ -22,7 +22,10 @@ function readSync (file) {
   return mkArray(json)
 }
 
-// Returns a fake remote server for manger-http to hit.
+// Returns a fake remote server for Manger to hit. All remote server fixtures
+// are merged into a single time series of test expectations. These are asserted
+// in order by one server per file. Dedicated servers would be overkill, as
+// these would all be on the same IP address (localhost) in any case.
 function freshRemoteServer (fixture, t) {
   const remotes = fixture.reduce((acc, f) => {
     const r = mkArray(f.remote)
@@ -85,27 +88,34 @@ function test (server, fixtures, t, cb) {
   const wanted = f.response
   const opts = httpRequestOpts(f.request)
 
-  if (f.title) t.comment(f.title)
+  t.test(f.title, (st) => {
+    const req = http.request(opts, (res) => {
+      st.is(res.statusCode, wanted.statusCode, 'should be status code')
+      let acc = ''
+      res.on('error', (er) => {
+        throw er
+      })
+      res.on('data', (chunk) => {
+        acc += chunk
+      })
+      res.on('end', () => {
+        const found = JSON.parse(acc)
+        const body = wanted.payload
+        st.matches(found, body, 'should match payload')
+        st.end()
+        test(server, fixtures, t, cb)
+      })
+      res.resume()
+    })
 
-  const req = http.request(opts, (res) => {
-    t.is(res.statusCode, wanted.statusCode, 'should be status code')
-    let acc = ''
-    res.on('error', (er) => {
-      throw er
-    })
-    res.on('data', (chunk) => {
-      acc += chunk
-    })
-    res.on('end', () => {
-      const found = JSON.parse(acc)
-      const body = wanted.payload
-      t.matches(found, body, 'should match payload')
-      test(server, fixtures, t, cb)
-    })
-    res.resume()
+    const payload = f.payload
+    if (payload) {
+      t.comment(`POST > ${payload}`)
+      req.write(payload)
+    }
+
+    req.end()
   })
-
-  req.end()
 }
 
 function run (file, t, cb) {

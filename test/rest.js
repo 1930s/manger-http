@@ -24,6 +24,13 @@ test('feed', (t) => {
   })
 })
 
+test('feeds', (t) => {
+  fixtures.run('feeds.json', t, (er) => {
+    if (er) throw er
+    t.end()
+  })
+})
+
 test('abort', (t) => {
   const server = common.freshMangerServer()
   server.start((er) => {
