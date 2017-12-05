@@ -37,6 +37,7 @@ function freshRemoteServer (fixture, t) {
 
   const fixtures = remotes.map((f) => {
     return (req, res) => {
+      t.is(req.method, f.method || 'GET', 'should be method')
       t.is(req.url, f.url, 'should be URL')
 
       // If the fixture does not provide a status code, we’re assuming an error,
@@ -47,7 +48,7 @@ function freshRemoteServer (fixture, t) {
         return
       }
 
-      res.writeHead(f.statusCode, f.head)
+      res.writeHead(f.statusCode, f.headers)
 
       if (f.file) {
         const p = resolve(f.file)
@@ -82,7 +83,9 @@ function httpRequestOpts (json) {
 function test (server, fixtures, t, cb) {
   const f = fixtures.shift()
   if (!f) {
-    return cb()
+    return setTimeout(() => {
+      cb()
+    }, 1000)
   }
 
   const wanted = f.response
@@ -90,7 +93,10 @@ function test (server, fixtures, t, cb) {
 
   t.test(f.title, (st) => {
     const req = http.request(opts, (res) => {
-      st.is(res.statusCode, wanted.statusCode, 'should be status code')
+      const sc = wanted.statusCode || 200
+      const body = wanted.payload || wanted
+
+      st.is(res.statusCode, sc, 'should be status code')
       let acc = ''
       res.on('error', (er) => {
         throw er
@@ -100,7 +106,6 @@ function test (server, fixtures, t, cb) {
       })
       res.on('end', () => {
         const found = JSON.parse(acc)
-        const body = wanted.payload
         st.matches(found, body, 'should match payload')
         st.end()
         test(server, fixtures, t, cb)
@@ -108,10 +113,10 @@ function test (server, fixtures, t, cb) {
       res.resume()
     })
 
-    const payload = f.payload
+    const payload = f.request.payload
     if (payload) {
       t.comment(`POST > ${payload}`)
-      req.write(payload)
+      req.write(JSON.stringify(payload))
     }
 
     req.end()
