@@ -114,7 +114,6 @@ function test (server, fixtures, t, cb) {
 
     const payload = f.request.payload
     if (payload) {
-      t.comment(`POST > ${payload}`)
       req.write(JSON.stringify(payload))
     }
 
