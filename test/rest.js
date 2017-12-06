@@ -38,6 +38,13 @@ test('entries', (t) => {
   })
 })
 
+test('ranks', (t) => {
+  fixtures.run('ranks.json', t, (er) => {
+    if (er) throw er
+    t.end()
+  })
+})
+
 test('abort', (t) => {
   const server = common.freshMangerServer()
   server.start((er) => {
