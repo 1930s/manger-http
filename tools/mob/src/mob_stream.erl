@@ -60,7 +60,7 @@ streams(N) when N < 25 ->
 streams(_) ->
   rand_stream([feeds, entries, feed, entries_of_feed]).
 
-%% Issue random request on the specified Gun connection and return the stream
+%% Issue random request on the specified Gun connection C and return the stream
 %% reference.
 stream(C) ->
   N = rand:uniform(250),

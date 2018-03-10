@@ -1,7 +1,7 @@
 -module(mob_request).
 -behaviour(gen_statem).
 
--export([start_link/1]).
+-export([start_link/2]).
 
 -export([
   terminate/3,
@@ -21,7 +21,8 @@
   host,
   port,
   connection,
-  stream
+  stream,
+  streamFun
 }).
 
 -ifdef(TEST).
@@ -30,8 +31,8 @@
 
 %% API
 
-start_link(Opts) ->
-  gen_statem:start_link(?MODULE, Opts, []).
+start_link({Host, Port}, F) ->
+  gen_statem:start_link(?MODULE, {Host, Port, F}, []).
 
 %% Mandatory Callbacks
 
@@ -43,10 +44,10 @@ connect(Host, Port) ->
     connection=ConnPid
   }.
 
-init({Host, Port}) ->
+init({Host, Port, StreamFun}) ->
   process_flag(trap_exit, true),
   State = connect(Host, Port),
-  {ok, connecting, State}.
+  {ok, connecting, State#state{streamFun=StreamFun}}.
 
 terminate(_Reason, _StateName, State) ->
   C = State#state.connection,
@@ -61,7 +62,8 @@ callback_mode() -> state_functions.
 
 request(State) ->
   C = State#state.connection,
-  S = mob_stream:stream(C),
+  F = State#state.streamFun,
+  S = F(C),
   Next = State#state{stream=S},
   {next_state, requesting, Next}.
 
